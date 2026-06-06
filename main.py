@@ -11,9 +11,10 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 SERVER_ICON_PATH = Path(os.getenv("SERVER_ICON_PATH", "assets/server-icon.png"))
 
+BOT_VERSION = "CLAZ FULL TICKET SYSTEM v4"
 SERVER_NAME = "Claz Services"
-BRAND_COLOR = discord.Color.from_rgb(255, 142, 36)
-GOLD_COLOR = discord.Color.from_rgb(255, 196, 55)
+BRAND_COLOR = discord.Color.from_rgb(255, 145, 35)
+GOLD_COLOR = discord.Color.from_rgb(255, 205, 75)
 DANGER_COLOR = discord.Color.from_rgb(220, 53, 69)
 
 if not TOKEN:
@@ -21,81 +22,27 @@ if not TOKEN:
 
 GUILD_ID = int(GUILD_ID) if GUILD_ID else None
 
-
 OWNER_ROLES = ["Owner", "Co Owner"]
 ADMIN_ROLES = ["Owner", "Co Owner", "Head Admin", "Admin"]
 STAFF_ROLES = [
-    "Owner",
-    "Co Owner",
-    "Head Admin",
-    "Admin",
-    "Shop Manager",
-    "Ticket Manager",
-    "Builder Manager",
-    "Partner Manager",
-    "Senior Staff",
-    "Staff",
-    "Trial Staff",
+    "Owner", "Co Owner", "Head Admin", "Admin", "Shop Manager",
+    "Ticket Manager", "Builder Manager", "Partner Manager",
+    "Senior Staff", "Staff", "Trial Staff",
 ]
 BUILDER_TIERS = ["Trial Builder", "Junior Builder", "Senior Builder", "Expert Builder"]
-BUILDER_MANAGER_ROLES = ["Builder Manager"]
 TRUSTED_SKELLY_ROLES = ["Trusted Buyer", "Trusted Seller"]
 
-
-# Top-to-bottom role order. The revamp command tries to place these under the bot role.
 ROLE_SPECS = [
     ("Owner", 0xFFB000, discord.Permissions(administrator=True), False),
     ("Co Owner", 0xFF7A1A, discord.Permissions(administrator=True), False),
     ("Head Admin", 0xE84D2A, discord.Permissions(administrator=True), False),
     ("Admin", 0xD93838, discord.Permissions(administrator=True), False),
-    (
-        "Shop Manager",
-        0xFF9F1C,
-        discord.Permissions(
-            manage_guild=True,
-            manage_roles=True,
-            manage_channels=True,
-            manage_messages=True,
-            kick_members=True,
-            ban_members=True,
-            moderate_members=True,
-        ),
-        False,
-    ),
-    (
-        "Ticket Manager",
-        0xF7B731,
-        discord.Permissions(
-            manage_channels=True,
-            manage_messages=True,
-            moderate_members=True,
-        ),
-        False,
-    ),
-    (
-        "Builder Manager",
-        0xC77DFF,
-        discord.Permissions(manage_channels=True, manage_messages=True),
-        False,
-    ),
-    (
-        "Partner Manager",
-        0x7B61FF,
-        discord.Permissions(manage_channels=True, manage_messages=True),
-        False,
-    ),
-    (
-        "Senior Staff",
-        0x4EA8DE,
-        discord.Permissions(manage_messages=True, moderate_members=True),
-        False,
-    ),
-    (
-        "Staff",
-        0x72C3FC,
-        discord.Permissions(manage_messages=True, moderate_members=True),
-        False,
-    ),
+    ("Shop Manager", 0xFF9F1C, discord.Permissions(manage_guild=True, manage_roles=True, manage_channels=True, manage_messages=True, kick_members=True, ban_members=True, moderate_members=True), False),
+    ("Ticket Manager", 0xF7B731, discord.Permissions(manage_channels=True, manage_messages=True), False),
+    ("Builder Manager", 0xC77DFF, discord.Permissions(manage_channels=True, manage_messages=True), False),
+    ("Partner Manager", 0x7B61FF, discord.Permissions(manage_channels=True, manage_messages=True), False),
+    ("Senior Staff", 0x4EA8DE, discord.Permissions(manage_messages=True, moderate_members=True), False),
+    ("Staff", 0x72C3FC, discord.Permissions(manage_messages=True, moderate_members=True), False),
     ("Trial Staff", 0xA9DEF9, discord.Permissions(manage_messages=True), False),
     ("Expert Builder", 0xFFD166, discord.Permissions(), False),
     ("Senior Builder", 0xF9C74F, discord.Permissions(), False),
@@ -117,170 +64,139 @@ ROLE_SPECS = [
 ]
 
 CLAIMABLE_ROLES = [
-    ("Member", "claim_member", "Member"),
-    ("Customer", "claim_customer", "Customer"),
-    ("Restock Ping", "claim_restock_ping", "Restock Ping"),
-    ("Giveaway Ping", "claim_giveaway_ping", "Giveaway Ping"),
-    ("Build Ping", "claim_build_ping", "Build Ping"),
-    ("Skelly Ping", "claim_skelly_ping", "Skelly Ping"),
+    ("Member", "member", "Member"),
+    ("Customer", "customer", "Customer"),
+    ("Restock Ping", "restock_ping", "Restock Ping"),
+    ("Giveaway Ping", "giveaway_ping", "Giveaway Ping"),
+    ("Build Ping", "build_ping", "Build Ping"),
+    ("Skelly Ping", "skelly_ping", "Skelly Ping"),
 ]
 
 TICKET_CONFIGS = {
     "build": {
         "label": "Base Build",
-        "emoji": "🏗️",
-        "button_style": discord.ButtonStyle.primary,
-        "channel_prefix": "build",
-        "panel_channel": "🏗️︱base-build-ticket",
+        "prefix": "build",
+        "panel_channel": "base-build-ticket",
         "panel_title": "Base Build Tickets",
         "panel_description": (
-            "Request a Donut SMP base, farm, room, wall, vault, or full custom build.\n\n"
-            "**Budget routing:**\n"
-            "10m or less -> Trial Builder\n"
-            "15m or less -> Junior Builder\n"
-            "25m or less -> Senior Builder\n"
-            "Above 25m -> Expert Builder"
+            "Open a build ticket for Donut SMP bases, farms, vaults, walls, interiors, "
+            "rooms, or custom projects.\n\n"
+            "Budget routing:\n"
+            "- 10m or less: Trial Builder and higher\n"
+            "- 15m or less: Junior Builder and higher\n"
+            "- 25m or less: Senior Builder and higher\n"
+            "- Above 25m: Expert Builder"
         ),
         "modal_title": "Base Build Request",
         "fields": [
             ("budget", "Budget", "Example: 10m, 15m, 25m, 50m", False),
             ("build_type", "Build Type", "Base, farm, vault, wall, interior, etc.", False),
-            ("details", "Build Details", "Describe size, style, blocks, deadline, and location.", True),
+            ("details", "Build Details", "Size, style, blocks, deadline, location, etc.", True),
         ],
     },
     "buy_skelly": {
         "label": "Buy Skellies",
-        "emoji": "💀",
-        "button_style": discord.ButtonStyle.success,
-        "channel_prefix": "buy-skelly",
-        "panel_channel": "💀︱buy-skellies-ticket",
+        "prefix": "buy-skelly",
+        "panel_channel": "buy-skellies-ticket",
         "panel_title": "Buy Skellies",
-        "panel_description": (
-            "Open this ticket if you want to buy skellies from trusted shop sellers."
-        ),
+        "panel_description": "Open this ticket if you want to buy skellies.",
         "modal_title": "Buy Skellies",
         "fields": [
             ("amount", "How many are you buying?", "Example: 2 skellies", False),
-            ("budget", "Budget / offer", "Example: 30m total or 15m each", False),
+            ("budget", "Budget / Offer", "Example: 30m total or 15m each", False),
             ("details", "Extra Details", "Payment method, urgency, questions, etc.", True),
         ],
     },
     "sell_skelly": {
         "label": "Sell Skellies",
-        "emoji": "💰",
-        "button_style": discord.ButtonStyle.success,
-        "channel_prefix": "sell-skelly",
-        "panel_channel": "💰︱sell-skellies-ticket",
+        "prefix": "sell-skelly",
+        "panel_channel": "sell-skellies-ticket",
         "panel_title": "Sell Skellies",
-        "panel_description": (
-            "Open this ticket if you want to sell skellies to trusted shop buyers."
-        ),
+        "panel_description": "Open this ticket if you want to sell skellies.",
         "modal_title": "Sell Skellies",
         "fields": [
             ("amount", "How many are you selling?", "Example: 3 skellies", False),
-            ("price", "Asking price", "Example: 45m total or 15m each", False),
-            ("details", "Proof / Extra Details", "Tell us proof, location, and anything important.", True),
+            ("price", "Asking Price", "Example: 45m total or 15m each", False),
+            ("details", "Proof / Extra Details", "Proof, location, and anything important.", True),
         ],
     },
     "report": {
         "label": "Report User",
-        "emoji": "🚨",
-        "button_style": discord.ButtonStyle.danger,
-        "channel_prefix": "report",
-        "panel_channel": "🚨︱report-user-ticket",
+        "prefix": "report",
+        "panel_channel": "report-user-ticket",
         "panel_title": "Report A User",
-        "panel_description": (
-            "Reports are private. Only the ticket opener and Owner role can view or answer them."
-        ),
+        "panel_description": "Reports are private. Only owners can answer report tickets.",
         "modal_title": "Report User",
         "fields": [
             ("user_id", "User ID", "Paste the Discord user ID you are reporting.", False),
-            ("reason", "What happened?", "Explain what happened clearly.", True),
-            ("evidence", "Evidence", "Links, screenshots, dates, or witnesses.", True),
+            ("reason", "What Happened?", "Explain what happened clearly.", True),
+            ("evidence", "Evidence", "Links, screenshots, dates, witnesses, etc.", True),
         ],
     },
 }
 
 
-def role_by_name(guild: discord.Guild, name: str):
+def role_by_name(guild, name):
     return discord.utils.get(guild.roles, name=name)
 
 
-def has_any_role(member: discord.Member, role_names: list[str]) -> bool:
-    member_role_names = {role.name for role in member.roles}
-    return bool(member_role_names.intersection(role_names))
+def has_any_role(member, role_names):
+    member_roles = {role.name for role in member.roles}
+    return bool(member_roles.intersection(role_names))
 
 
-def parse_money_to_millions(value: str) -> float | None:
+def parse_money_to_millions(value):
     cleaned = value.lower().replace(",", "").replace("$", "").strip()
     match = re.search(r"(\d+(?:\.\d+)?)\s*([mb]?)", cleaned)
     if not match:
         return None
-
     amount = float(match.group(1))
-    suffix = match.group(2)
-    if suffix == "b":
+    if match.group(2) == "b":
         amount *= 1000
     return amount
 
 
-def builder_roles_for_budget(budget_text: str):
+def build_route_for_budget(budget_text):
     millions = parse_money_to_millions(budget_text)
-
     if millions is None or millions <= 10:
-        tier_index = 0
+        index = 0
     elif millions <= 15:
-        tier_index = 1
+        index = 1
     elif millions <= 25:
-        tier_index = 2
+        index = 2
     else:
-        tier_index = 3
+        index = 3
+    tier = BUILDER_TIERS[index]
+    claim_roles = BUILDER_TIERS[index:] + ["Builder Manager"] + ADMIN_ROLES
+    return tier, claim_roles
 
-    tier = BUILDER_TIERS[tier_index]
-    eligible = BUILDER_TIERS[tier_index:] + BUILDER_MANAGER_ROLES + ADMIN_ROLES
-    return tier, eligible
 
-
-def claim_roles_for_ticket(ticket_type: str, data: dict[str, str]) -> tuple[str, list[str]]:
+def ticket_route(ticket_type, data):
     if ticket_type == "build":
-        tier, roles = builder_roles_for_budget(data.get("budget", ""))
-        return tier, roles
-
+        return build_route_for_budget(data.get("budget", ""))
     if ticket_type in {"buy_skelly", "sell_skelly"}:
         return "Trusted Skelly Team", TRUSTED_SKELLY_ROLES + ADMIN_ROLES
-
     if ticket_type == "report":
         return "Owner Only", ["Owner"]
-
     return "Staff", STAFF_ROLES
 
 
-def clean_channel_name(value: str) -> str:
+def clean_name(value):
     cleaned = re.sub(r"[^a-zA-Z0-9-]+", "-", value.lower()).strip("-")
     cleaned = re.sub(r"-+", "-", cleaned)
-    return cleaned[:40] or "ticket"
+    return cleaned[:50] or "ticket"
 
 
-def build_ticket_topic(
-    ticket_type: str,
-    owner_id: int,
-    claim_role_names: list[str],
-    claimed_by: int | None = None,
-) -> str:
-    claimed = claimed_by or 0
+def build_topic(ticket_type, owner_id, claim_roles, claimed_by=0):
     return (
-        "claz_ticket"
-        f"|type={ticket_type}"
-        f"|owner={owner_id}"
-        f"|claimed={claimed}"
-        f"|claim_roles={','.join(claim_role_names)}"
+        f"claz_ticket|type={ticket_type}|owner={owner_id}|claimed={claimed_by}"
+        f"|claim_roles={','.join(claim_roles)}"
     )
 
 
-def parse_ticket_topic(topic: str | None) -> dict[str, str]:
+def parse_topic(topic):
     if not topic or not topic.startswith("claz_ticket"):
         return {}
-
     data = {}
     for part in topic.split("|")[1:]:
         if "=" in part:
@@ -289,57 +205,43 @@ def parse_ticket_topic(topic: str | None) -> dict[str, str]:
     return data
 
 
-def ticket_claim_role_names(channel: discord.TextChannel) -> list[str]:
-    meta = parse_ticket_topic(channel.topic)
-    return [name for name in meta.get("claim_roles", "").split(",") if name]
+def ticket_claim_roles(channel):
+    data = parse_topic(channel.topic)
+    return [name for name in data.get("claim_roles", "").split(",") if name]
 
 
-def ticket_owner_id(channel: discord.TextChannel) -> int | None:
-    meta = parse_ticket_topic(channel.topic)
-    owner = meta.get("owner")
-    return int(owner) if owner and owner.isdigit() else None
+def ticket_owner_id(channel):
+    data = parse_topic(channel.topic)
+    owner_id = data.get("owner")
+    return int(owner_id) if owner_id and owner_id.isdigit() else None
 
 
-def can_claim_ticket(member: discord.Member, channel: discord.TextChannel) -> bool:
-    if member.guild_permissions.administrator:
-        return True
-
-    allowed_roles = ticket_claim_role_names(channel)
-    return has_any_role(member, allowed_roles)
+def can_claim(member, channel):
+    return member.guild_permissions.administrator or has_any_role(member, ticket_claim_roles(channel))
 
 
-def can_close_ticket(member: discord.Member, channel: discord.TextChannel) -> bool:
-    if member.guild_permissions.administrator or can_claim_ticket(member, channel):
-        return True
-
-    owner_id = ticket_owner_id(channel)
-    return owner_id == member.id
+def can_close(member, channel):
+    return can_claim(member, channel) or ticket_owner_id(channel) == member.id
 
 
-async def send_or_update_embed(
-    channel: discord.TextChannel,
-    marker: str,
-    embed: discord.Embed,
-    view: discord.ui.View | None = None,
-) -> bool:
+async def send_or_edit(channel, marker, embed, view=None):
     embed.set_footer(text=marker)
-
     async for message in channel.history(limit=30):
         if (
-            message.author == channel.guild.me
+            client.user
+            and message.author.id == client.user.id
             and message.embeds
             and message.embeds[0].footer
             and message.embeds[0].footer.text == marker
         ):
             await message.edit(embed=embed, view=view)
             return False
-
     await channel.send(embed=embed, view=view)
     return True
 
 
 class RoleButton(discord.ui.Button):
-    def __init__(self, label: str, custom_id: str, role_name: str):
+    def __init__(self, label, custom_id, role_name):
         super().__init__(
             label=label,
             style=discord.ButtonStyle.secondary,
@@ -347,40 +249,25 @@ class RoleButton(discord.ui.Button):
         )
         self.role_name = role_name
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction):
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(
-                "This can only be used inside the server.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Use this inside the server.", ephemeral=True)
             return
 
         role = role_by_name(interaction.guild, self.role_name)
         if role is None:
-            await interaction.response.send_message(
-                f"The {self.role_name} role does not exist yet.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message(f"Missing role: {self.role_name}", ephemeral=True)
             return
 
         try:
             if role in interaction.user.roles:
-                await interaction.user.remove_roles(role, reason="Claim roles button")
-                await interaction.response.send_message(
-                    f"Removed {role.mention}.",
-                    ephemeral=True,
-                )
+                await interaction.user.remove_roles(role, reason="Role button")
+                await interaction.response.send_message(f"Removed {role.mention}.", ephemeral=True)
             else:
-                await interaction.user.add_roles(role, reason="Claim roles button")
-                await interaction.response.send_message(
-                    f"Added {role.mention}.",
-                    ephemeral=True,
-                )
+                await interaction.user.add_roles(role, reason="Role button")
+                await interaction.response.send_message(f"Added {role.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await interaction.response.send_message(
-                "I cannot manage that role. Move my bot role above it.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Move my bot role higher so I can manage this role.", ephemeral=True)
 
 
 class ClaimRolesView(discord.ui.View):
@@ -391,123 +278,70 @@ class ClaimRolesView(discord.ui.View):
 
 
 class TicketOpenButton(discord.ui.Button):
-    def __init__(self, ticket_type: str):
+    def __init__(self, ticket_type):
         config = TICKET_CONFIGS[ticket_type]
         super().__init__(
             label=f"Open {config['label']} Ticket",
-            emoji=config["emoji"],
-            style=config["button_style"],
-            custom_id=f"claz_ticket_open_{ticket_type}",
+            style=discord.ButtonStyle.danger if ticket_type == "report" else discord.ButtonStyle.primary,
+            custom_id=f"claz_open_{ticket_type}",
         )
         self.ticket_type = ticket_type
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction):
         await interaction.response.send_modal(TicketModal(self.ticket_type))
 
 
 class TicketPanelView(discord.ui.View):
-    def __init__(self, ticket_type: str):
+    def __init__(self, ticket_type):
         super().__init__(timeout=None)
         self.add_item(TicketOpenButton(ticket_type))
 
 
-class TicketControlView(discord.ui.View):
+class TicketControls(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(
-        label="Claim Ticket",
-        emoji="✅",
-        style=discord.ButtonStyle.success,
-        custom_id="claz_ticket_claim",
-    )
-    async def claim_ticket(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ):
+    @discord.ui.button(label="Claim Ticket", style=discord.ButtonStyle.success, custom_id="claz_claim_ticket")
+    async def claim_ticket(self, interaction, button):
         if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.response.send_message(
-                "This button only works inside a ticket channel.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Use this in a ticket channel.", ephemeral=True)
+            return
+        if not isinstance(interaction.user, discord.Member) or not can_claim(interaction.user, interaction.channel):
+            await interaction.response.send_message("You cannot claim this ticket.", ephemeral=True)
             return
 
-        if not isinstance(interaction.user, discord.Member) or not can_claim_ticket(
-            interaction.user,
-            interaction.channel,
-        ):
-            await interaction.response.send_message(
-                "You do not have permission to claim this ticket.",
-                ephemeral=True,
-            )
+        data = parse_topic(interaction.channel.topic)
+        if data.get("claimed") and data.get("claimed") != "0":
+            await interaction.response.send_message("This ticket is already claimed.", ephemeral=True)
             return
 
-        meta = parse_ticket_topic(interaction.channel.topic)
-        if meta.get("claimed") and meta.get("claimed") != "0":
-            await interaction.response.send_message(
-                "This ticket has already been claimed.",
-                ephemeral=True,
-            )
-            return
-
-        topic = build_ticket_topic(
-            ticket_type=meta.get("type", "unknown"),
-            owner_id=int(meta.get("owner", "0")),
-            claim_role_names=ticket_claim_role_names(interaction.channel),
-            claimed_by=interaction.user.id,
+        new_topic = build_topic(
+            data.get("type", "unknown"),
+            int(data.get("owner", "0")),
+            ticket_claim_roles(interaction.channel),
+            interaction.user.id,
         )
+        await interaction.channel.edit(topic=new_topic, reason=f"Claimed by {interaction.user}")
+        await interaction.response.send_message(f"{interaction.user.mention} claimed this ticket.")
 
-        await interaction.channel.edit(
-            topic=topic,
-            reason=f"Ticket claimed by {interaction.user}",
-        )
-        await interaction.response.send_message(
-            f"{interaction.user.mention} claimed this ticket.",
-        )
-
-    @discord.ui.button(
-        label="Close Ticket",
-        emoji="🔒",
-        style=discord.ButtonStyle.danger,
-        custom_id="claz_ticket_close",
-    )
-    async def close_ticket(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ):
+    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="claz_close_ticket")
+    async def close_ticket(self, interaction, button):
         if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.response.send_message(
-                "This button only works inside a ticket channel.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Use this in a ticket channel.", ephemeral=True)
             return
-
-        if not isinstance(interaction.user, discord.Member) or not can_close_ticket(
-            interaction.user,
-            interaction.channel,
-        ):
-            await interaction.response.send_message(
-                "You do not have permission to close this ticket.",
-                ephemeral=True,
-            )
+        if not isinstance(interaction.user, discord.Member) or not can_close(interaction.user, interaction.channel):
+            await interaction.response.send_message("You cannot close this ticket.", ephemeral=True)
             return
-
-        await interaction.response.send_message(
-            "Closing this ticket now.",
-            ephemeral=True,
-        )
-        await interaction.channel.delete(reason=f"Ticket closed by {interaction.user}")
+        await interaction.response.send_message("Closing ticket.", ephemeral=True)
+        await interaction.channel.delete(reason=f"Closed by {interaction.user}")
 
 
 class TicketModal(discord.ui.Modal):
-    def __init__(self, ticket_type: str):
+    def __init__(self, ticket_type):
         self.ticket_type = ticket_type
         config = TICKET_CONFIGS[ticket_type]
         super().__init__(title=config["modal_title"])
-        self.inputs: dict[str, discord.ui.TextInput] = {}
-
+        self.inputs = {}
         for key, label, placeholder, paragraph in config["fields"]:
             item = discord.ui.TextInput(
                 label=label,
@@ -519,35 +353,20 @@ class TicketModal(discord.ui.Modal):
             self.inputs[key] = item
             self.add_item(item)
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction):
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(
-                "Tickets can only be opened inside the server.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Use tickets inside the server.", ephemeral=True)
             return
-
         data = {key: str(item.value).strip() for key, item in self.inputs.items()}
         try:
-            channel = await create_ticket_channel(
-                interaction=interaction,
-                ticket_type=self.ticket_type,
-                data=data,
-            )
+            channel = await create_ticket(interaction, self.ticket_type, data)
         except discord.Forbidden:
-            await interaction.response.send_message(
-                "I need Manage Channels and permission to edit ticket channels.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("I need Manage Channels to create tickets.", ephemeral=True)
             return
-
-        await interaction.response.send_message(
-            f"Your ticket is open: {channel.mention}",
-            ephemeral=True,
-        )
+        await interaction.response.send_message(f"Ticket opened: {channel.mention}", ephemeral=True)
 
 
-class ClazServicesBot(discord.Client):
+class ClazBot(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
         intents.members = True
@@ -558,7 +377,7 @@ class ClazServicesBot(discord.Client):
         self.add_view(ClaimRolesView())
         for ticket_type in TICKET_CONFIGS:
             self.add_view(TicketPanelView(ticket_type))
-        self.add_view(TicketControlView())
+        self.add_view(TicketControls())
 
         if GUILD_ID:
             guild = discord.Object(id=GUILD_ID)
@@ -570,17 +389,17 @@ class ClazServicesBot(discord.Client):
             print(f"Synced {len(synced)} global command(s).")
 
 
-client = ClazServicesBot()
+client = ClazBot()
 
 
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    print(f"Logged in as {client.user} | {BOT_VERSION}")
 
 
 @client.event
-async def on_member_join(member: discord.Member):
-    channel = discord.utils.get(member.guild.text_channels, name="👋︱welcome")
+async def on_member_join(member):
+    channel = discord.utils.get(member.guild.text_channels, name="welcome")
     if channel is None:
         channel = member.guild.system_channel
     if channel is None:
@@ -591,22 +410,17 @@ async def on_member_join(member: discord.Member):
         description=(
             f"{member.mention}, welcome in.\n\n"
             "Open a ticket for base builds, skelly buying/selling, support, or reports. "
-            "Check the rules and product channels before ordering."
+            "Check rules, products, prices, and restocks before ordering."
         ),
         color=BRAND_COLOR,
     )
     embed.set_thumbnail(url=member.display_avatar.url)
-    embed.add_field(
-        name="Member Count",
-        value=f"You are member #{member.guild.member_count}.",
-        inline=True,
-    )
+    embed.add_field(name="Member Count", value=f"#{member.guild.member_count}", inline=True)
     embed.set_footer(text="Claz Services | Donut SMP Fortune Shop")
-
     await channel.send(content=f"Welcome {member.mention}!", embed=embed)
 
 
-async def ensure_roles(guild: discord.Guild):
+async def ensure_roles(guild):
     roles = {}
     created = 0
     updated = 0
@@ -614,7 +428,6 @@ async def ensure_roles(guild: discord.Guild):
 
     for name, color, permissions, mentionable in reversed(ROLE_SPECS):
         role = role_by_name(guild, name)
-
         if role is None:
             try:
                 role = await guild.create_role(
@@ -640,498 +453,340 @@ async def ensure_roles(guild: discord.Guild):
                     updated += 1
             except discord.Forbidden:
                 warnings.append(f"Could not update role: {name}")
-
         roles[name] = role
 
     return roles, created, updated, warnings
 
 
-async def fix_role_hierarchy(guild: discord.Guild, roles: dict[str, discord.Role]):
+async def fix_role_hierarchy(guild, roles):
     warnings = []
     bot_member = guild.me
     if bot_member is None:
-        warnings.append("Could not read the bot member for role hierarchy.")
-        return warnings
+        return ["Could not read bot member for hierarchy."]
 
-    top_target = bot_member.top_role.position - 1
-    if top_target <= 0:
-        warnings.append("Move the bot role higher so it can reorder shop roles.")
-        return warnings
+    position = bot_member.top_role.position - 1
+    if position <= 0:
+        return ["Move the bot role higher so it can reorder roles."]
 
     positions = {}
-    target_position = top_target
-
     for name, *_ in ROLE_SPECS:
         role = roles.get(name)
         if role is None or role.managed:
             continue
         if role >= bot_member.top_role:
-            warnings.append(f"Could not move {name}; it is above or equal to the bot role.")
+            warnings.append(f"Could not move {name}; it is above/equal to the bot role.")
             continue
-        if target_position <= 0:
-            warnings.append("The bot role is not high enough to place every shop role.")
+        positions[role] = position
+        position -= 1
+        if position <= 0:
+            warnings.append("Bot role is not high enough to place every role.")
             break
-
-        positions[role] = target_position
-        target_position -= 1
 
     if positions:
         try:
-            await guild.edit_role_positions(
-                positions=positions,
-                reason="Claz Services role hierarchy fix",
-            )
+            await guild.edit_role_positions(positions=positions, reason="Claz role hierarchy fix")
         except discord.Forbidden:
-            warnings.append("Could not edit role hierarchy. Move the bot role higher.")
-
+            warnings.append("Could not edit role hierarchy. Move bot role higher.")
     return warnings
 
 
-async def assign_owner_role(
-    guild: discord.Guild,
-    member: discord.Member,
-    roles: dict[str, discord.Role],
-):
-    owner_role = roles.get("Owner")
-    if owner_role is None or owner_role in member.roles:
+async def give_runner_owner_role(guild, member, roles):
+    role = roles.get("Owner")
+    if role is None or role in member.roles:
         return None
-
-    bot_member = guild.me
-    if bot_member is None or owner_role >= bot_member.top_role:
-        return "Could not give you Owner role because it is above/equal to the bot role."
-
+    if guild.me is None or role >= guild.me.top_role:
+        return "Could not give command runner Owner role. Move bot role higher."
     try:
-        await member.add_roles(owner_role, reason="Claz Services revamp runner")
+        await member.add_roles(role, reason="Revamp command runner")
     except discord.Forbidden:
-        return "Could not give you Owner role. Move the bot role higher."
-
+        return "Could not give command runner Owner role."
     return None
 
 
-async def brand_server(guild: discord.Guild):
+async def brand_server(guild):
     warnings = []
-    icon_bytes = None
-
+    edit_kwargs = {"name": SERVER_NAME, "reason": "Claz Services branding"}
     if SERVER_ICON_PATH.exists():
-        icon_bytes = SERVER_ICON_PATH.read_bytes()
+        edit_kwargs["icon"] = SERVER_ICON_PATH.read_bytes()
     else:
-        warnings.append(
-            "Server icon was not changed. Add your image as assets/server-icon.png "
-            "or set SERVER_ICON_PATH."
-        )
-
+        warnings.append("Icon not changed. Add your image as assets/server-icon.png.")
     try:
-        edit_kwargs = {"name": SERVER_NAME, "reason": "Claz Services revamp"}
-        if icon_bytes:
-            edit_kwargs["icon"] = icon_bytes
         await guild.edit(**edit_kwargs)
     except discord.Forbidden:
-        warnings.append("Could not rename or set server icon. I need Manage Server.")
+        warnings.append("Could not rename/set icon. Bot needs Manage Server.")
     except discord.HTTPException:
-        warnings.append("Could not set server icon. Try a smaller PNG/JPG image.")
-
+        warnings.append("Could not set icon. Use a smaller PNG/JPG.")
     return warnings
 
 
-def overwrites_for(guild: discord.Guild, roles: dict, mode: str):
+def get_roles(roles, names):
+    return [roles[name] for name in names if roles.get(name)]
+
+
+def overwrites_for(guild, roles, mode):
     everyone = guild.default_role
     muted = roles.get("Muted")
 
-    def role_list(names: list[str]):
-        return [roles.get(name) for name in names if roles.get(name)]
-
     if mode == "readonly":
-        overwrites = {
-            everyone: discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=False,
-                read_message_history=True,
-            )
-        }
-        for role in role_list(STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                manage_messages=True,
-                read_message_history=True,
-            )
-    elif mode == "staff_only":
+        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=False, read_message_history=True)}
+        for role in get_roles(roles, STAFF_ROLES):
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True, read_message_history=True)
+    elif mode == "staff":
         overwrites = {everyone: discord.PermissionOverwrite(view_channel=False)}
-        for role in role_list(STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                read_message_history=True,
-            )
-    elif mode == "owner_only":
-        overwrites = {everyone: discord.PermissionOverwrite(view_channel=False)}
-        for role in role_list(OWNER_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                read_message_history=True,
-            )
+        for role in get_roles(roles, STAFF_ROLES):
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
     elif mode == "panel":
-        overwrites = {
-            everyone: discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=False,
-                read_message_history=True,
-            )
-        }
-        for role in role_list(STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                manage_messages=True,
-                read_message_history=True,
-            )
+        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=False, read_message_history=True)}
+        for role in get_roles(roles, STAFF_ROLES):
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True, read_message_history=True)
     elif mode == "hidden":
         overwrites = {everyone: discord.PermissionOverwrite(view_channel=False)}
     elif mode == "voice":
-        overwrites = {
-            everyone: discord.PermissionOverwrite(
-                view_channel=True,
-                connect=True,
-                speak=True,
-            )
-        }
+        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)}
     else:
-        overwrites = {
-            everyone: discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                read_message_history=True,
-            )
-        }
+        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)}
 
     if muted:
-        overwrites[muted] = discord.PermissionOverwrite(
-            send_messages=False,
-            add_reactions=False,
-            speak=False,
-        )
-
+        overwrites[muted] = discord.PermissionOverwrite(send_messages=False, add_reactions=False, speak=False)
     return overwrites
 
 
-async def ensure_category(guild: discord.Guild, name: str, overwrites: dict):
+async def ensure_category(guild, name, overwrites):
     category = discord.utils.get(guild.categories, name=name)
     if category is None:
-        return await guild.create_category(
-            name=name,
-            overwrites=overwrites,
-            reason="Claz Services revamp",
-        )
-
-    await category.edit(overwrites=overwrites, reason="Claz Services revamp")
+        return await guild.create_category(name=name, overwrites=overwrites, reason="Claz revamp")
+    await category.edit(overwrites=overwrites, reason="Claz revamp")
     return category
 
 
-async def ensure_text_channel(
-    guild: discord.Guild,
-    category: discord.CategoryChannel,
-    name: str,
-    overwrites: dict,
-):
+async def ensure_text(guild, category, name, overwrites):
     channel = discord.utils.get(guild.text_channels, name=name)
     if channel is None:
-        return await guild.create_text_channel(
-            name=name,
-            category=category,
-            overwrites=overwrites,
-            reason="Claz Services revamp",
-        )
-
-    await channel.edit(
-        category=category,
-        overwrites=overwrites,
-        reason="Claz Services revamp",
-    )
+        return await guild.create_text_channel(name=name, category=category, overwrites=overwrites, reason="Claz revamp")
+    await channel.edit(category=category, overwrites=overwrites, reason="Claz revamp")
     return channel
 
 
-async def ensure_voice_channel(
-    guild: discord.Guild,
-    category: discord.CategoryChannel,
-    name: str,
-    overwrites: dict,
-):
+async def ensure_voice(guild, category, name, overwrites):
     channel = discord.utils.get(guild.voice_channels, name=name)
     if channel is None:
-        return await guild.create_voice_channel(
-            name=name,
-            category=category,
-            overwrites=overwrites,
-            reason="Claz Services revamp",
-        )
-
-    await channel.edit(
-        category=category,
-        overwrites=overwrites,
-        reason="Claz Services revamp",
-    )
+        return await guild.create_voice_channel(name=name, category=category, overwrites=overwrites, reason="Claz revamp")
+    await channel.edit(category=category, overwrites=overwrites, reason="Claz revamp")
     return channel
 
 
-async def send_rules_embed(channel: discord.TextChannel):
+async def clear_old_channels(guild, keep_channel):
+    deleted_channels = 0
+    deleted_categories = 0
+    warnings = []
+    keep_id = getattr(keep_channel, "id", None)
+
+    for channel in list(guild.channels):
+        if isinstance(channel, discord.CategoryChannel):
+            continue
+        if channel.id == keep_id:
+            continue
+        try:
+            await channel.delete(reason="Claz Services clean revamp")
+            deleted_channels += 1
+        except discord.Forbidden:
+            warnings.append(f"Could not delete channel: {channel.name}")
+        except discord.HTTPException:
+            warnings.append(f"Discord failed deleting channel: {channel.name}")
+
+    for category in list(guild.categories):
+        try:
+            await category.delete(reason="Claz Services clean revamp")
+            deleted_categories += 1
+        except discord.Forbidden:
+            warnings.append(f"Could not delete category: {category.name}")
+        except discord.HTTPException:
+            warnings.append(f"Discord failed deleting category: {category.name}")
+
+    return deleted_channels, deleted_categories, warnings
+
+
+async def send_rules(channel):
     embed = discord.Embed(
         title="Claz Services Rules",
         description=(
-            "**Rule 1:** No mass pinging. Mass pinging can result in a mute or ban.\n"
-            "**Rule 2:** Be respectful to staff, builders, sellers, buyers, and members.\n"
-            "**Rule 3:** No NSFW, hate speech, scams, or unsafe links.\n"
-            "**Rule 4:** Be patient in tickets. Do not spam staff or builders.\n"
+            "**Rule 1:** No mass pinging. Mass pinging can result in mute/ban.\n"
+            "**Rule 2:** Be respectful to staff, builders, buyers, sellers, and members.\n"
+            "**Rule 3:** No NSFW, scams, hate speech, or unsafe links.\n"
+            "**Rule 4:** Be patient in tickets. Do not spam staff/builders.\n"
             "**Rule 5:** Vouch after every completed sale or build.\n"
-            "**Rule 6:** Use the correct ticket panel for builds, skellies, or reports.\n"
-            "**Rule 7:** Reports must include a user ID, what happened, and evidence."
+            "**Rule 6:** Use the correct ticket panel.\n"
+            "**Rule 7:** Reports must include user ID, explanation, and evidence."
         ),
         color=BRAND_COLOR,
     )
-    embed.add_field(
-        name="Ticket Reminder",
-        value="Opening fake tickets or wasting time may lead to losing ticket access.",
-        inline=False,
-    )
-    await send_or_update_embed(channel, "Claz Services | rules", embed)
+    embed.add_field(name="Ticket Reminder", value="Fake tickets, spam, or wasting time can remove ticket access.", inline=False)
+    await send_or_edit(channel, "Claz Services | rules", embed)
 
 
-async def send_claim_roles_message(channel: discord.TextChannel):
+async def send_claim_roles(channel):
     embed = discord.Embed(
         title="Claim Your Shop Roles",
-        description="Use the buttons below to claim customer roles and ping roles.",
+        description="Use the buttons below to claim customer and ping roles.",
         color=GOLD_COLOR,
     )
-    embed.add_field(
-        name="Available",
-        value="Member, Customer, Restock Ping, Giveaway Ping, Build Ping, Skelly Ping",
-        inline=False,
-    )
-
-    return await send_or_update_embed(
-        channel,
-        "Claz Services | claim roles",
-        embed,
-        ClaimRolesView(),
-    )
+    embed.add_field(name="Available Roles", value="Member, Customer, Restock Ping, Giveaway Ping, Build Ping, Skelly Ping", inline=False)
+    return await send_or_edit(channel, "Claz Services | claim roles", embed, ClaimRolesView())
 
 
-async def send_ticket_panel(channel: discord.TextChannel, ticket_type: str):
+async def send_panel(channel, ticket_type):
     config = TICKET_CONFIGS[ticket_type]
     embed = discord.Embed(
         title=config["panel_title"],
         description=config["panel_description"],
         color=DANGER_COLOR if ticket_type == "report" else BRAND_COLOR,
     )
-    embed.add_field(
-        name="How It Works",
-        value=(
-            "Click the button, fill out the form, then wait for the correct team "
-            "to claim and answer your ticket."
-        ),
-        inline=False,
-    )
-    embed.add_field(
-        name="Do Not Spam",
-        value="One ticket per request. Staff may close duplicate or fake tickets.",
-        inline=False,
-    )
-
-    return await send_or_update_embed(
-        channel,
-        f"Claz Services | panel | {ticket_type}",
-        embed,
-        TicketPanelView(ticket_type),
-    )
+    embed.add_field(name="How It Works", value="Click the button, fill out the form, then wait for the correct team to claim it.", inline=False)
+    embed.add_field(name="Do Not Spam", value="Open one ticket per request. Duplicates/fake tickets may be closed.", inline=False)
+    return await send_or_edit(channel, f"Claz Services | ticket panel | {ticket_type}", embed, TicketPanelView(ticket_type))
 
 
-async def build_server_layout(guild: discord.Guild, roles: dict):
+async def build_layout(guild, roles):
     panel_messages = 0
-
     readonly = overwrites_for(guild, roles, "readonly")
     public = overwrites_for(guild, roles, "public")
     panel = overwrites_for(guild, roles, "panel")
     hidden = overwrites_for(guild, roles, "hidden")
-    staff_only = overwrites_for(guild, roles, "staff_only")
+    staff = overwrites_for(guild, roles, "staff")
     voice = overwrites_for(guild, roles, "voice")
 
-    info = await ensure_category(guild, "📌━━【Claz Information】━━", readonly)
-    await ensure_text_channel(guild, info, "📢︱announcements", readonly)
-    rules = await ensure_text_channel(guild, info, "📖︱rules", readonly)
-    await ensure_text_channel(guild, info, "✅︱legit-check", readonly)
-    await ensure_text_channel(guild, info, "📦︱restocks", readonly)
-    await ensure_text_channel(guild, info, "💎︱products", readonly)
-    await ensure_text_channel(guild, info, "💰︱prices", readonly)
-    await ensure_text_channel(guild, info, "❔︱role-info", readonly)
-    claim_roles = await ensure_text_channel(guild, info, "⭐︱claim-roles", readonly)
-    await ensure_text_channel(guild, info, "👋︱welcome", readonly)
-
-    await send_rules_embed(rules)
-    if await send_claim_roles_message(claim_roles):
+    info = await ensure_category(guild, "CLAZ INFORMATION", readonly)
+    await ensure_text(guild, info, "announcements", readonly)
+    rules_channel = await ensure_text(guild, info, "rules", readonly)
+    await ensure_text(guild, info, "legit-check", readonly)
+    await ensure_text(guild, info, "restocks", readonly)
+    await ensure_text(guild, info, "products", readonly)
+    await ensure_text(guild, info, "prices", readonly)
+    await ensure_text(guild, info, "role-info", readonly)
+    claim_channel = await ensure_text(guild, info, "claim-roles", readonly)
+    await ensure_text(guild, info, "welcome", readonly)
+    await send_rules(rules_channel)
+    if await send_claim_roles(claim_channel):
         panel_messages += 1
 
-    shop = await ensure_category(guild, "🛒━━【Donut SMP Shop】━━", public)
-    await ensure_text_channel(guild, shop, "🛒︱buy-here", public)
-    await ensure_text_channel(guild, shop, "💎︱stock", readonly)
-    await ensure_text_channel(guild, shop, "🍩︱donut-items", readonly)
-    await ensure_text_channel(guild, shop, "💵︱sell-to-us", public)
-    await ensure_text_channel(guild, shop, "🔁︱trading", public)
-    await ensure_text_channel(guild, shop, "🔎︱vouches", public)
+    shop = await ensure_category(guild, "DONUT SMP SHOP", public)
+    await ensure_text(guild, shop, "buy-here", public)
+    await ensure_text(guild, shop, "stock", readonly)
+    await ensure_text(guild, shop, "donut-items", readonly)
+    await ensure_text(guild, shop, "sell-to-us", public)
+    await ensure_text(guild, shop, "trading", public)
+    await ensure_text(guild, shop, "vouches", public)
 
-    builds = await ensure_category(guild, "🏗️━━【Build Services】━━", readonly)
-    await ensure_text_channel(guild, builds, "🏗️︱build-info", readonly)
-    await ensure_text_channel(guild, builds, "💸︱build-prices", readonly)
-    await ensure_text_channel(guild, builds, "🖼️︱build-portfolio", readonly)
+    builds = await ensure_category(guild, "BUILD SERVICES", readonly)
+    await ensure_text(guild, builds, "build-info", readonly)
+    await ensure_text(guild, builds, "build-prices", readonly)
+    await ensure_text(guild, builds, "build-portfolio", readonly)
 
-    panels = await ensure_category(guild, "🎫━━【Ticket Panels】━━", panel)
+    panels = await ensure_category(guild, "TICKET PANELS", panel)
     for ticket_type, config in TICKET_CONFIGS.items():
-        panel_channel = await ensure_text_channel(
-            guild,
-            panels,
-            config["panel_channel"],
-            panel,
-        )
-        if await send_ticket_panel(panel_channel, ticket_type):
+        channel = await ensure_text(guild, panels, config["panel_channel"], panel)
+        if await send_panel(channel, ticket_type):
             panel_messages += 1
 
-    await ensure_category(guild, "📩━━【Active Tickets】━━", hidden)
+    await ensure_category(guild, "ACTIVE TICKETS", hidden)
 
-    giveaways = await ensure_category(guild, "🎉━━【Giveaways】━━", readonly)
-    await ensure_text_channel(guild, giveaways, "🎉︱daily-giveaway", readonly)
-    await ensure_text_channel(guild, giveaways, "🎉︱weekly-giveaway", readonly)
-    await ensure_text_channel(guild, giveaways, "🎉︱big-giveaways", readonly)
+    giveaways = await ensure_category(guild, "GIVEAWAYS", readonly)
+    await ensure_text(guild, giveaways, "daily-giveaway", readonly)
+    await ensure_text(guild, giveaways, "weekly-giveaway", readonly)
+    await ensure_text(guild, giveaways, "big-giveaways", readonly)
 
-    community = await ensure_category(guild, "🌐━━【Community】━━", public)
-    await ensure_text_channel(guild, community, "🌍︱chat", public)
-    await ensure_text_channel(guild, community, "🌍︱temp-chat", public)
-    await ensure_text_channel(guild, community, "🛒︱market", public)
-    await ensure_text_channel(guild, community, "⚙️︱commands", public)
-    await ensure_text_channel(guild, community, "💬︱leveling", public)
-    await ensure_text_channel(guild, community, "🎥︱streams", public)
-    await ensure_text_channel(guild, community, "📸︱media", public)
+    community = await ensure_category(guild, "COMMUNITY", public)
+    await ensure_text(guild, community, "chat", public)
+    await ensure_text(guild, community, "temp-chat", public)
+    await ensure_text(guild, community, "market", public)
+    await ensure_text(guild, community, "commands", public)
+    await ensure_text(guild, community, "leveling", public)
+    await ensure_text(guild, community, "streams", public)
+    await ensure_text(guild, community, "media", public)
 
-    partnership = await ensure_category(guild, "🤝━━【Partnership】━━", public)
-    await ensure_text_channel(guild, partnership, "📌︱our-ad", readonly)
-    await ensure_text_channel(guild, partnership, "🤝︱partners", readonly)
-    await ensure_text_channel(guild, partnership, "📕︱partner-req", public)
+    partners = await ensure_category(guild, "PARTNERSHIP", public)
+    await ensure_text(guild, partners, "our-ad", readonly)
+    await ensure_text(guild, partners, "partners", readonly)
+    await ensure_text(guild, partners, "partner-req", public)
 
-    staff = await ensure_category(guild, "🛡️━━【Staff】━━", staff_only)
-    await ensure_text_channel(guild, staff, "📝︱staff-chat", staff_only)
-    await ensure_text_channel(guild, staff, "📢︱staff-announcements", staff_only)
-    await ensure_text_channel(guild, staff, "📋︱staff-logs", staff_only)
-    await ensure_text_channel(guild, staff, "🧾︱order-logs", staff_only)
-    await ensure_text_channel(guild, staff, "🏗️︱build-logs", staff_only)
+    staff_cat = await ensure_category(guild, "STAFF", staff)
+    await ensure_text(guild, staff_cat, "staff-chat", staff)
+    await ensure_text(guild, staff_cat, "staff-announcements", staff)
+    await ensure_text(guild, staff_cat, "staff-logs", staff)
+    await ensure_text(guild, staff_cat, "order-logs", staff)
+    await ensure_text(guild, staff_cat, "build-logs", staff)
 
-    voice_category = await ensure_category(guild, "🔊━━【Voice Channels】━━", voice)
-    await ensure_voice_channel(guild, voice_category, "🔊︱General 1", voice)
-    await ensure_voice_channel(guild, voice_category, "🔊︱General 2", voice)
-    await ensure_voice_channel(guild, voice_category, "🏗️︱Build Calls", voice)
-    await ensure_voice_channel(guild, voice_category, "💎︱Trusted Deals", voice)
+    voice_cat = await ensure_category(guild, "VOICE CHANNELS", voice)
+    await ensure_voice(guild, voice_cat, "General 1", voice)
+    await ensure_voice(guild, voice_cat, "General 2", voice)
+    await ensure_voice(guild, voice_cat, "Build Calls", voice)
+    await ensure_voice(guild, voice_cat, "Trusted Deals", voice)
 
     return panel_messages
 
 
-async def create_ticket_channel(
-    interaction: discord.Interaction,
-    ticket_type: str,
-    data: dict[str, str],
-):
+async def create_ticket(interaction, ticket_type, data):
     guild = interaction.guild
     user = interaction.user
     config = TICKET_CONFIGS[ticket_type]
-    route_name, claim_role_names = claim_roles_for_ticket(ticket_type, data)
+    route_name, claim_role_names = ticket_route(ticket_type, data)
 
-    active_category = discord.utils.get(guild.categories, name="📩━━【Active Tickets】━━")
-    if active_category is None:
-        active_category = await guild.create_category(
-            name="📩━━【Active Tickets】━━",
+    category = discord.utils.get(guild.categories, name="ACTIVE TICKETS")
+    if category is None:
+        category = await guild.create_category(
+            name="ACTIVE TICKETS",
             overwrites={guild.default_role: discord.PermissionOverwrite(view_channel=False)},
             reason="Ticket category created",
         )
 
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
-        user: discord.PermissionOverwrite(
-            view_channel=True,
-            send_messages=True,
-            attach_files=True,
-            embed_links=True,
-            read_message_history=True,
-        ),
+        user: discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True, read_message_history=True),
     }
-
-    bot_member = guild.me
-    if bot_member:
-        overwrites[bot_member] = discord.PermissionOverwrite(
-            view_channel=True,
-            send_messages=True,
-            manage_channels=True,
-            read_message_history=True,
-        )
+    if guild.me:
+        overwrites[guild.me] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True, read_message_history=True)
 
     claim_roles = []
-    for role_name in claim_role_names:
-        role = role_by_name(guild, role_name)
+    for name in claim_role_names:
+        role = role_by_name(guild, name)
         if role:
             claim_roles.append(role)
-            overwrites[role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                attach_files=True,
-                embed_links=True,
-                read_message_history=True,
-            )
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True, read_message_history=True)
 
     muted = role_by_name(guild, "Muted")
     if muted:
-        overwrites[muted] = discord.PermissionOverwrite(
-            view_channel=False,
-            send_messages=False,
-        )
+        overwrites[muted] = discord.PermissionOverwrite(view_channel=False, send_messages=False)
 
-    username = clean_channel_name(user.name)
-    prefix = config["channel_prefix"]
-    channel_name = clean_channel_name(f"{prefix}-{username}")
-
+    channel_name = clean_name(f"{config['prefix']}-{user.name}")
     channel = await guild.create_text_channel(
         name=channel_name,
-        category=active_category,
+        category=category,
         overwrites=overwrites,
-        topic=build_ticket_topic(ticket_type, user.id, claim_role_names),
+        topic=build_topic(ticket_type, user.id, claim_role_names),
         reason=f"{config['label']} ticket opened by {user}",
     )
 
     embed = discord.Embed(
-        title=f"{config['emoji']} {config['label']} Ticket",
-        description=(
-            f"Opened by {user.mention}\n"
-            f"Routed to: **{route_name}**"
-        ),
+        title=f"{config['label']} Ticket",
+        description=f"Opened by {user.mention}\nRouted to: **{route_name}**",
         color=DANGER_COLOR if ticket_type == "report" else BRAND_COLOR,
     )
-
     for key, value in data.items():
         embed.add_field(name=key.replace("_", " ").title(), value=value[:1024], inline=False)
-
-    embed.add_field(
-        name="Claim Access",
-        value=", ".join(role.mention for role in claim_roles) or "Configured staff",
-        inline=False,
-    )
+    embed.add_field(name="Claim Access", value=", ".join(role.mention for role in claim_roles) or "Configured staff", inline=False)
     embed.set_footer(text="Use the buttons below to claim or close this ticket.")
 
-    role_mentions = " ".join(role.mention for role in claim_roles)
+    mentions = " ".join(role.mention for role in claim_roles)
     await channel.send(
-        content=f"{user.mention} {role_mentions}".strip(),
+        content=f"{user.mention} {mentions}".strip(),
         embed=embed,
-        view=TicketControlView(),
+        view=TicketControls(),
         allowed_mentions=discord.AllowedMentions(users=True, roles=True),
     )
-
     return channel
 
 
-def required_bot_permissions(member: discord.Member) -> list[str]:
+def missing_bot_permissions(member):
     checks = [
         ("Manage Server", member.guild_permissions.manage_guild),
         ("Manage Roles", member.guild_permissions.manage_roles),
@@ -1140,168 +795,123 @@ def required_bot_permissions(member: discord.Member) -> list[str]:
         ("Send Messages", member.guild_permissions.send_messages),
         ("Embed Links", member.guild_permissions.embed_links),
     ]
-    return [name for name, allowed in checks if not allowed]
+    return [name for name, ok in checks if not ok]
 
 
 @client.tree.command(
     name="revamp_server",
     description="Set up Claz Services roles, channels, tickets, rules, branding, and permissions.",
 )
+@app_commands.describe(delete_old_channels="Delete old channels/categories before rebuilding the layout.")
 @app_commands.default_permissions(administrator=True)
 @app_commands.checks.has_permissions(administrator=True)
-async def revamp_server(interaction: discord.Interaction):
+async def revamp_server(interaction, delete_old_channels: bool = True):
     if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-        await interaction.response.send_message(
-            "Use this command inside your server.",
-            ephemeral=True,
-        )
+        await interaction.response.send_message("Use this inside your server.", ephemeral=True)
         return
 
     guild = interaction.guild
-    bot_member = guild.me
-
-    if bot_member is None:
-        await interaction.response.send_message(
-            "I could not read my server permissions yet. Try again in a few seconds.",
-            ephemeral=True,
-        )
+    if guild.me is None:
+        await interaction.response.send_message("I cannot read my bot member yet.", ephemeral=True)
         return
 
-    missing = required_bot_permissions(bot_member)
+    missing = missing_bot_permissions(guild.me)
     if missing:
-        await interaction.response.send_message(
-            "I need these permissions first: " + ", ".join(missing),
-            ephemeral=True,
-        )
+        await interaction.response.send_message("I need these permissions first: " + ", ".join(missing), ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True, thinking=True)
-
     warnings = []
     warnings.extend(await brand_server(guild))
 
-    roles, created_roles, updated_roles, role_warnings = await ensure_roles(guild)
+    roles, created, updated, role_warnings = await ensure_roles(guild)
     warnings.extend(role_warnings)
     warnings.extend(await fix_role_hierarchy(guild, roles))
 
-    owner_warning = await assign_owner_role(guild, interaction.user, roles)
+    owner_warning = await give_runner_owner_role(guild, interaction.user, roles)
     if owner_warning:
         warnings.append(owner_warning)
 
-    panel_messages = await build_server_layout(guild, roles)
+    deleted_channels = 0
+    deleted_categories = 0
+    if delete_old_channels:
+        deleted_channels, deleted_categories, delete_warnings = await clear_old_channels(guild, interaction.channel)
+        warnings.extend(delete_warnings)
+
+    panel_messages = await build_layout(guild, roles)
 
     summary = (
+        f"{BOT_VERSION}\n"
         "Claz Services revamp complete.\n"
-        f"Roles created: {created_roles}\n"
-        f"Roles updated: {updated_roles}\n"
-        f"New panel/role messages created: {panel_messages}\n"
+        f"Roles created: {created}\n"
+        f"Roles updated: {updated}\n"
+        f"Old channels deleted: {deleted_channels}\n"
+        f"Old categories deleted: {deleted_categories}\n"
+        f"Ticket/role panel messages created: {panel_messages}\n"
         "Ticket system: online\n"
         "Rules embed: posted/updated\n"
         "Welcome message: enabled"
     )
-
     if warnings:
         summary += "\n\nWarnings:\n" + "\n".join(f"- {warning}" for warning in warnings)
-
     await interaction.followup.send(summary[:1900], ephemeral=True)
 
 
-@client.tree.command(
-    name="lockdown_channel",
-    description="Lock a channel so only the Owner role can type.",
-)
+@client.tree.command(name="lockdown_channel", description="Lock a channel so only Owner can type.")
 @app_commands.default_permissions(administrator=True)
 @app_commands.checks.has_permissions(administrator=True)
-async def lockdown_channel(
-    interaction: discord.Interaction,
-    channel: discord.TextChannel | None = None,
-    reason: str = "Channel lockdown",
-):
+async def lockdown_channel(interaction, channel: discord.TextChannel | None = None, reason: str = "Channel lockdown"):
     if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-        await interaction.response.send_message(
-            "Use this command inside your server.",
-            ephemeral=True,
-        )
+        await interaction.response.send_message("Use this inside your server.", ephemeral=True)
         return
 
     target = channel or interaction.channel
     if not isinstance(target, discord.TextChannel):
-        await interaction.response.send_message(
-            "Please choose a text channel.",
-            ephemeral=True,
-        )
+        await interaction.response.send_message("Pick a text channel.", ephemeral=True)
         return
 
     owner_role = role_by_name(interaction.guild, "Owner")
     if owner_role is None:
-        await interaction.response.send_message(
-            "The Owner role does not exist yet. Run `/revamp_server` first.",
-            ephemeral=True,
-        )
+        await interaction.response.send_message("Run /revamp_server first.", ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True, thinking=True)
-
-    await target.set_permissions(
-        interaction.guild.default_role,
-        send_messages=False,
-        add_reactions=False,
-        reason=reason,
-    )
+    await target.set_permissions(interaction.guild.default_role, send_messages=False, add_reactions=False, reason=reason)
 
     for role in interaction.guild.roles:
         if role.is_default() or role.managed or role == owner_role:
             continue
-        await target.set_permissions(
-            role,
-            send_messages=False,
-            add_reactions=False,
-            reason=reason,
-        )
+        await target.set_permissions(role, send_messages=False, add_reactions=False, reason=reason)
 
-    await target.set_permissions(
-        owner_role,
-        view_channel=True,
-        send_messages=True,
-        add_reactions=True,
-        read_message_history=True,
-        reason=reason,
-    )
-
+    await target.set_permissions(owner_role, view_channel=True, send_messages=True, add_reactions=True, read_message_history=True, reason=reason)
     if interaction.guild.me:
-        await target.set_permissions(
-            interaction.guild.me,
-            view_channel=True,
-            send_messages=True,
-            manage_channels=True,
-            reason=reason,
-        )
+        await target.set_permissions(interaction.guild.me, view_channel=True, send_messages=True, manage_channels=True, reason=reason)
 
-    embed = discord.Embed(
-        title="Channel Locked",
-        description=f"{target.mention} is now locked. Only the Owner role can type.",
-        color=DANGER_COLOR,
-    )
+    embed = discord.Embed(title="Channel Locked", description=f"{target.mention} is locked. Only Owner can type.", color=DANGER_COLOR)
     embed.add_field(name="Reason", value=reason, inline=False)
     await target.send(embed=embed)
     await interaction.followup.send(f"Locked {target.mention}.", ephemeral=True)
 
 
-@revamp_server.error
-@lockdown_channel.error
-async def command_error(
-    interaction: discord.Interaction,
-    error: app_commands.AppCommandError,
-):
+async def handle_command_error(interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
         message = "Only admins can use this command."
     else:
         message = f"Something went wrong: {error}"
-
     if interaction.response.is_done():
         await interaction.followup.send(message, ephemeral=True)
     else:
         await interaction.response.send_message(message, ephemeral=True)
+
+
+@revamp_server.error
+async def revamp_server_error(interaction, error):
+    await handle_command_error(interaction, error)
+
+
+@lockdown_channel.error
+async def lockdown_channel_error(interaction, error):
+    await handle_command_error(interaction, error)
 
 
 client.run(TOKEN)
