@@ -11,7 +11,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 SERVER_ICON_PATH = Path(os.getenv("SERVER_ICON_PATH", "assets/server-icon.png"))
 
-BOT_VERSION = "CLAZ FULL TICKET SYSTEM v3"
+BOT_VERSION = "CLAZ FULL TICKET SYSTEM v4"
 SERVER_NAME = "Claz Services"
 BRAND_COLOR = discord.Color.from_rgb(255, 145, 35)
 GOLD_COLOR = discord.Color.from_rgb(255, 205, 75)
@@ -25,24 +25,71 @@ GUILD_ID = int(GUILD_ID) if GUILD_ID else None
 OWNER_ROLES = ["Owner", "Co Owner"]
 ADMIN_ROLES = ["Owner", "Co Owner", "Head Admin", "Admin"]
 STAFF_ROLES = [
-    "Owner", "Co Owner", "Head Admin", "Admin", "Shop Manager",
-    "Ticket Manager", "Builder Manager", "Partner Manager",
-    "Senior Staff", "Staff", "Trial Staff",
+    "Owner",
+    "Co Owner",
+    "Head Admin",
+    "Admin",
+    "Shop Manager",
+    "Ticket Manager",
+    "Builder Manager",
+    "Partner Manager",
+    "Senior Staff",
+    "Staff",
+    "Trial Staff",
 ]
 BUILDER_TIERS = ["Trial Builder", "Junior Builder", "Senior Builder", "Expert Builder"]
 TRUSTED_SKELLY_ROLES = ["Trusted Buyer", "Trusted Seller"]
+
 
 ROLE_SPECS = [
     ("Owner", 0xFFB000, discord.Permissions(administrator=True), False),
     ("Co Owner", 0xFF7A1A, discord.Permissions(administrator=True), False),
     ("Head Admin", 0xE84D2A, discord.Permissions(administrator=True), False),
     ("Admin", 0xD93838, discord.Permissions(administrator=True), False),
-    ("Shop Manager", 0xFF9F1C, discord.Permissions(manage_guild=True, manage_roles=True, manage_channels=True, manage_messages=True, kick_members=True, ban_members=True, moderate_members=True), False),
-    ("Ticket Manager", 0xF7B731, discord.Permissions(manage_channels=True, manage_messages=True), False),
-    ("Builder Manager", 0xC77DFF, discord.Permissions(manage_channels=True, manage_messages=True), False),
-    ("Partner Manager", 0x7B61FF, discord.Permissions(manage_channels=True, manage_messages=True), False),
-    ("Senior Staff", 0x4EA8DE, discord.Permissions(manage_messages=True, moderate_members=True), False),
-    ("Staff", 0x72C3FC, discord.Permissions(manage_messages=True, moderate_members=True), False),
+    (
+        "Shop Manager",
+        0xFF9F1C,
+        discord.Permissions(
+            manage_guild=True,
+            manage_roles=True,
+            manage_channels=True,
+            manage_messages=True,
+            kick_members=True,
+            ban_members=True,
+            moderate_members=True,
+        ),
+        False,
+    ),
+    (
+        "Ticket Manager",
+        0xF7B731,
+        discord.Permissions(manage_channels=True, manage_messages=True),
+        False,
+    ),
+    (
+        "Builder Manager",
+        0xC77DFF,
+        discord.Permissions(manage_channels=True, manage_messages=True),
+        False,
+    ),
+    (
+        "Partner Manager",
+        0x7B61FF,
+        discord.Permissions(manage_channels=True, manage_messages=True),
+        False,
+    ),
+    (
+        "Senior Staff",
+        0x4EA8DE,
+        discord.Permissions(manage_messages=True, moderate_members=True),
+        False,
+    ),
+    (
+        "Staff",
+        0x72C3FC,
+        discord.Permissions(manage_messages=True, moderate_members=True),
+        False,
+    ),
     ("Trial Staff", 0xA9DEF9, discord.Permissions(manage_messages=True), False),
     ("Expert Builder", 0xFFD166, discord.Permissions(), False),
     ("Senior Builder", 0xF9C74F, discord.Permissions(), False),
@@ -78,7 +125,15 @@ TICKET_CONFIGS = {
         "prefix": "build",
         "panel_channel": "base-build-ticket",
         "panel_title": "Base Build Tickets",
-        "panel_description": "Open a build ticket for Donut SMP bases, farms, vaults, walls, interiors, rooms, or custom projects.\n\nBudget routing:\n- 10m or less: Trial Builder and higher\n- 15m or less: Junior Builder and higher\n- 25m or less: Senior Builder and higher\n- Above 25m: Expert Builder",
+        "panel_description": (
+            "Open a build ticket for Donut SMP bases, farms, vaults, walls, interiors, "
+            "rooms, or custom projects.\n\n"
+            "Budget routing:\n"
+            "- 10m or less: Trial Builder and higher\n"
+            "- 15m or less: Junior Builder and higher\n"
+            "- 25m or less: Senior Builder and higher\n"
+            "- Above 25m: Expert Builder"
+        ),
         "modal_title": "Base Build Request",
         "fields": [
             ("budget", "Budget", "Example: 10m, 15m, 25m, 50m", False),
@@ -217,10 +272,21 @@ def can_close(member: discord.Member, channel: discord.TextChannel) -> bool:
     return can_claim(member, channel) or ticket_owner_id(channel) == member.id
 
 
-async def send_or_edit(channel: discord.TextChannel, marker: str, embed: discord.Embed, view: discord.ui.View | None = None):
+async def send_or_edit(
+    channel: discord.TextChannel,
+    marker: str,
+    embed: discord.Embed,
+    view: discord.ui.View | None = None,
+):
     embed.set_footer(text=marker)
     async for message in channel.history(limit=30):
-        if client.user and message.author.id == client.user.id and message.embeds and message.embeds[0].footer and message.embeds[0].footer.text == marker:
+        if (
+            client.user
+            and message.author.id == client.user.id
+            and message.embeds
+            and message.embeds[0].footer
+            and message.embeds[0].footer.text == marker
+        ):
             await message.edit(embed=embed, view=view)
             return False
     await channel.send(embed=embed, view=view)
@@ -229,7 +295,11 @@ async def send_or_edit(channel: discord.TextChannel, marker: str, embed: discord
 
 class RoleButton(discord.ui.Button):
     def __init__(self, label: str, custom_id: str, role_name: str):
-        super().__init__(label=label, style=discord.ButtonStyle.secondary, custom_id=f"claz_role_{custom_id}")
+        super().__init__(
+            label=label,
+            style=discord.ButtonStyle.secondary,
+            custom_id=f"claz_role_{custom_id}",
+        )
         self.role_name = role_name
 
     async def callback(self, interaction: discord.Interaction):
@@ -248,7 +318,10 @@ class RoleButton(discord.ui.Button):
                 await interaction.user.add_roles(role, reason="Role button")
                 await interaction.response.send_message(f"Added {role.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await interaction.response.send_message("I cannot manage that role. Move my bot role higher.", ephemeral=True)
+            await interaction.response.send_message(
+                "I cannot manage that role. Move my bot role higher.",
+                ephemeral=True,
+            )
 
 
 class ClaimRolesView(discord.ui.View):
@@ -342,7 +415,10 @@ class TicketModal(discord.ui.Modal):
         try:
             channel = await create_ticket(interaction, self.ticket_type, data)
         except discord.Forbidden:
-            await interaction.response.send_message("I need Manage Channels to create tickets.", ephemeral=True)
+            await interaction.response.send_message(
+                "I need Manage Channels to create tickets.",
+                ephemeral=True,
+            )
             return
         await interaction.response.send_message(f"Ticket opened: {channel.mention}", ephemeral=True)
 
@@ -410,7 +486,13 @@ async def ensure_roles(guild: discord.Guild):
         role = role_by_name(guild, name)
         if role is None:
             try:
-                role = await guild.create_role(name=name, colour=discord.Color(color), permissions=permissions, mentionable=mentionable, reason="Claz Services revamp")
+                role = await guild.create_role(
+                    name=name,
+                    colour=discord.Color(color),
+                    permissions=permissions,
+                    mentionable=mentionable,
+                    reason="Claz Services revamp",
+                )
                 created += 1
             except discord.Forbidden:
                 warnings.append(f"Could not create role: {name}")
@@ -418,7 +500,12 @@ async def ensure_roles(guild: discord.Guild):
         else:
             try:
                 if not role.managed:
-                    await role.edit(colour=discord.Color(color), permissions=permissions, mentionable=mentionable, reason="Claz Services revamp")
+                    await role.edit(
+                        colour=discord.Color(color),
+                        permissions=permissions,
+                        mentionable=mentionable,
+                        reason="Claz Services revamp",
+                    )
                     updated += 1
             except discord.Forbidden:
                 warnings.append(f"Could not update role: {name}")
@@ -497,26 +584,64 @@ def overwrites_for(guild: discord.Guild, roles: dict, mode: str):
     muted = roles.get("Muted")
 
     if mode == "readonly":
-        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=False, read_message_history=True)}
+        overwrites = {
+            everyone: discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=False,
+                read_message_history=True,
+            )
+        }
         for role in get_roles(roles, STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True, read_message_history=True)
+            overwrites[role] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                manage_messages=True,
+                read_message_history=True,
+            )
     elif mode == "staff":
         overwrites = {everyone: discord.PermissionOverwrite(view_channel=False)}
         for role in get_roles(roles, STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
+            overwrites[role] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                read_message_history=True,
+            )
     elif mode == "hidden":
         overwrites = {everyone: discord.PermissionOverwrite(view_channel=False)}
     elif mode == "panel":
-        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=False, read_message_history=True)}
+        overwrites = {
+            everyone: discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=False,
+                read_message_history=True,
+            )
+        }
         for role in get_roles(roles, STAFF_ROLES):
-            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True, read_message_history=True)
+            overwrites[role] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                manage_messages=True,
+                read_message_history=True,
+            )
     elif mode == "voice":
-        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)}
+        overwrites = {
+            everyone: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
+        }
     else:
-        overwrites = {everyone: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)}
+        overwrites = {
+            everyone: discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                read_message_history=True,
+            )
+        }
 
     if muted:
-        overwrites[muted] = discord.PermissionOverwrite(send_messages=False, add_reactions=False, speak=False)
+        overwrites[muted] = discord.PermissionOverwrite(
+            send_messages=False,
+            add_reactions=False,
+            speak=False,
+        )
     return overwrites
 
 
@@ -531,7 +656,12 @@ async def ensure_category(guild: discord.Guild, name: str, overwrites: dict):
 async def ensure_text(guild: discord.Guild, category: discord.CategoryChannel, name: str, overwrites: dict):
     channel = discord.utils.get(guild.text_channels, name=name)
     if channel is None:
-        return await guild.create_text_channel(name=name, category=category, overwrites=overwrites, reason="Claz revamp")
+        return await guild.create_text_channel(
+            name=name,
+            category=category,
+            overwrites=overwrites,
+            reason="Claz revamp",
+        )
     await channel.edit(category=category, overwrites=overwrites, reason="Claz revamp")
     return channel
 
@@ -539,7 +669,12 @@ async def ensure_text(guild: discord.Guild, category: discord.CategoryChannel, n
 async def ensure_voice(guild: discord.Guild, category: discord.CategoryChannel, name: str, overwrites: dict):
     channel = discord.utils.get(guild.voice_channels, name=name)
     if channel is None:
-        return await guild.create_voice_channel(name=name, category=category, overwrites=overwrites, reason="Claz revamp")
+        return await guild.create_voice_channel(
+            name=name,
+            category=category,
+            overwrites=overwrites,
+            reason="Claz revamp",
+        )
     await channel.edit(category=category, overwrites=overwrites, reason="Claz revamp")
     return channel
 
@@ -558,7 +693,11 @@ async def send_rules(channel: discord.TextChannel):
         ),
         color=BRAND_COLOR,
     )
-    embed.add_field(name="Ticket Reminder", value="Fake tickets, spam, or wasting time can remove ticket access.", inline=False)
+    embed.add_field(
+        name="Ticket Reminder",
+        value="Fake tickets, spam, or wasting time can remove ticket access.",
+        inline=False,
+    )
     await send_or_edit(channel, "Claz Services | rules", embed)
 
 
@@ -568,7 +707,11 @@ async def send_claim_roles(channel: discord.TextChannel):
         description="Use the buttons below to claim customer and ping roles.",
         color=GOLD_COLOR,
     )
-    embed.add_field(name="Available Roles", value="Member, Customer, Restock Ping, Giveaway Ping, Build Ping, Skelly Ping", inline=False)
+    embed.add_field(
+        name="Available Roles",
+        value="Member, Customer, Restock Ping, Giveaway Ping, Build Ping, Skelly Ping",
+        inline=False,
+    )
     return await send_or_edit(channel, "Claz Services | claim roles", embed, ClaimRolesView())
 
 
@@ -579,9 +722,22 @@ async def send_panel(channel: discord.TextChannel, ticket_type: str):
         description=config["panel_description"],
         color=DANGER_COLOR if ticket_type == "report" else BRAND_COLOR,
     )
-    embed.add_field(name="How It Works", value="Click the button, fill out the form, then wait for the correct team to claim it.", inline=False)
-    embed.add_field(name="Do Not Spam", value="Open one ticket per request. Duplicates/fake tickets may be closed.", inline=False)
-    return await send_or_edit(channel, f"Claz Services | ticket panel | {ticket_type}", embed, TicketPanelView(ticket_type))
+    embed.add_field(
+        name="How It Works",
+        value="Click the button, fill out the form, then wait for the correct team to claim it.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Do Not Spam",
+        value="Open one ticket per request. Duplicates/fake tickets may be closed.",
+        inline=False,
+    )
+    return await send_or_edit(
+        channel,
+        f"Claz Services | ticket panel | {ticket_type}",
+        embed,
+        TicketPanelView(ticket_type),
+    )
 
 
 async def build_layout(guild: discord.Guild, roles: dict):
@@ -663,6 +819,37 @@ async def build_layout(guild: discord.Guild, roles: dict):
     return panel_messages
 
 
+async def clear_old_channels(guild: discord.Guild, keep_channel: discord.abc.GuildChannel | None):
+    deleted_channels = 0
+    deleted_categories = 0
+    warnings = []
+    keep_channel_id = keep_channel.id if keep_channel else None
+
+    for channel in list(guild.channels):
+        if isinstance(channel, discord.CategoryChannel):
+            continue
+        if channel.id == keep_channel_id:
+            continue
+        try:
+            await channel.delete(reason="Claz Services clean revamp")
+            deleted_channels += 1
+        except discord.Forbidden:
+            warnings.append(f"Could not delete channel: {channel.name}")
+        except discord.HTTPException:
+            warnings.append(f"Discord failed deleting channel: {channel.name}")
+
+    for category in list(guild.categories):
+        try:
+            await category.delete(reason="Claz Services clean revamp")
+            deleted_categories += 1
+        except discord.Forbidden:
+            warnings.append(f"Could not delete category: {category.name}")
+        except discord.HTTPException:
+            warnings.append(f"Discord failed deleting category: {category.name}")
+
+    return deleted_channels, deleted_categories, warnings
+
+
 async def create_ticket(interaction: discord.Interaction, ticket_type: str, data: dict[str, str]):
     guild = interaction.guild
     user = interaction.user
@@ -679,17 +866,34 @@ async def create_ticket(interaction: discord.Interaction, ticket_type: str, data
 
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
-        user: discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True, read_message_history=True),
+        user: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True,
+            attach_files=True,
+            embed_links=True,
+            read_message_history=True,
+        ),
     }
     if guild.me:
-        overwrites[guild.me] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True, read_message_history=True)
+        overwrites[guild.me] = discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True,
+            manage_channels=True,
+            read_message_history=True,
+        )
 
     claim_roles = []
     for name in claim_role_names:
         role = role_by_name(guild, name)
         if role:
             claim_roles.append(role)
-            overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True, read_message_history=True)
+            overwrites[role] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                attach_files=True,
+                embed_links=True,
+                read_message_history=True,
+            )
 
     muted = role_by_name(guild, "Muted")
     if muted:
@@ -711,7 +915,11 @@ async def create_ticket(interaction: discord.Interaction, ticket_type: str, data
     )
     for key, value in data.items():
         embed.add_field(name=key.replace("_", " ").title(), value=value[:1024], inline=False)
-    embed.add_field(name="Claim Access", value=", ".join(role.mention for role in claim_roles) or "Configured staff", inline=False)
+    embed.add_field(
+        name="Claim Access",
+        value=", ".join(role.mention for role in claim_roles) or "Configured staff",
+        inline=False,
+    )
     embed.set_footer(text="Use the buttons below to claim or close this ticket.")
 
     mentions = " ".join(role.mention for role in claim_roles)
@@ -736,10 +944,17 @@ def missing_bot_permissions(member: discord.Member):
     return [name for name, ok in checks if not ok]
 
 
-@client.tree.command(name="revamp_server", description="Set up Claz Services roles, channels, tickets, rules, branding, and permissions.")
+@client.tree.command(
+    name="revamp_server",
+    description="Set up Claz Services roles, channels, tickets, rules, branding, and permissions.",
+)
+@app_commands.describe(delete_old_channels="Delete old channels/categories before rebuilding the layout.")
 @app_commands.default_permissions(administrator=True)
 @app_commands.checks.has_permissions(administrator=True)
-async def revamp_server(interaction: discord.Interaction):
+async def revamp_server(
+    interaction: discord.Interaction,
+    delete_old_channels: bool = True,
+):
     if interaction.guild is None or not isinstance(interaction.user, discord.Member):
         await interaction.response.send_message("Use this inside your server.", ephemeral=True)
         return
@@ -751,7 +966,10 @@ async def revamp_server(interaction: discord.Interaction):
 
     missing = missing_bot_permissions(guild.me)
     if missing:
-        await interaction.response.send_message("I need these permissions first: " + ", ".join(missing), ephemeral=True)
+        await interaction.response.send_message(
+            "I need these permissions first: " + ", ".join(missing),
+            ephemeral=True,
+        )
         return
 
     await interaction.response.defer(ephemeral=True, thinking=True)
@@ -766,6 +984,18 @@ async def revamp_server(interaction: discord.Interaction):
     if owner_warning:
         warnings.append(owner_warning)
 
+    deleted_channels = 0
+    deleted_categories = 0
+    if delete_old_channels:
+        keep_channel = interaction.channel
+        if not isinstance(keep_channel, discord.abc.GuildChannel):
+            keep_channel = None
+        deleted_channels, deleted_categories, delete_warnings = await clear_old_channels(
+            guild,
+            keep_channel,
+        )
+        warnings.extend(delete_warnings)
+
     panel_messages = await build_layout(guild, roles)
 
     summary = (
@@ -773,6 +1003,8 @@ async def revamp_server(interaction: discord.Interaction):
         "Claz Services revamp complete.\n"
         f"Roles created: {created}\n"
         f"Roles updated: {updated}\n"
+        f"Old channels deleted: {deleted_channels}\n"
+        f"Old categories deleted: {deleted_categories}\n"
         f"Ticket/role panel messages created: {panel_messages}\n"
         "Ticket system: online\n"
         "Rules embed: posted/updated\n"
@@ -786,7 +1018,11 @@ async def revamp_server(interaction: discord.Interaction):
 @client.tree.command(name="lockdown_channel", description="Lock a channel so only Owner can type.")
 @app_commands.default_permissions(administrator=True)
 @app_commands.checks.has_permissions(administrator=True)
-async def lockdown_channel(interaction: discord.Interaction, channel: discord.TextChannel | None = None, reason: str = "Channel lockdown"):
+async def lockdown_channel(
+    interaction: discord.Interaction,
+    channel: discord.TextChannel | None = None,
+    reason: str = "Channel lockdown",
+):
     if interaction.guild is None or not isinstance(interaction.user, discord.Member):
         await interaction.response.send_message("Use this inside your server.", ephemeral=True)
         return
@@ -802,16 +1038,38 @@ async def lockdown_channel(interaction: discord.Interaction, channel: discord.Te
         return
 
     await interaction.response.defer(ephemeral=True, thinking=True)
-    await target.set_permissions(interaction.guild.default_role, send_messages=False, add_reactions=False, reason=reason)
+    await target.set_permissions(
+        interaction.guild.default_role,
+        send_messages=False,
+        add_reactions=False,
+        reason=reason,
+    )
     for role in interaction.guild.roles:
         if role.is_default() or role.managed or role == owner_role:
             continue
         await target.set_permissions(role, send_messages=False, add_reactions=False, reason=reason)
-    await target.set_permissions(owner_role, view_channel=True, send_messages=True, add_reactions=True, read_message_history=True, reason=reason)
+    await target.set_permissions(
+        owner_role,
+        view_channel=True,
+        send_messages=True,
+        add_reactions=True,
+        read_message_history=True,
+        reason=reason,
+    )
     if interaction.guild.me:
-        await target.set_permissions(interaction.guild.me, view_channel=True, send_messages=True, manage_channels=True, reason=reason)
+        await target.set_permissions(
+            interaction.guild.me,
+            view_channel=True,
+            send_messages=True,
+            manage_channels=True,
+            reason=reason,
+        )
 
-    embed = discord.Embed(title="Channel Locked", description=f"{target.mention} is locked. Only Owner can type.", color=DANGER_COLOR)
+    embed = discord.Embed(
+        title="Channel Locked",
+        description=f"{target.mention} is locked. Only Owner can type.",
+        color=DANGER_COLOR,
+    )
     embed.add_field(name="Reason", value=reason, inline=False)
     await target.send(embed=embed)
     await interaction.followup.send(f"Locked {target.mention}.", ephemeral=True)
